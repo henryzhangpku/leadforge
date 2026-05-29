@@ -1,0 +1,149 @@
+<div class="d-flex justify-content-between align-items-center mt-4 mb-4">
+  <h2><i class="bi bi-people me-2"></i>Leads Database</h2>
+  <div>
+    <a href="/leads?format=csv<%= query ? '&q='+query : '' %><%= industry ? '&industry='+industry : '' %><%= location ? '&location='+location : '' %>" class="btn btn-success">
+      <i class="bi bi-download me-1"></i>Export CSV
+    </a>
+  </div>
+</div>
+
+<div class="card mb-4">
+  <div class="card-body">
+    <form method="GET" action="/leads" class="row g-3">
+      <div class="col-md-4">
+        <input type="text" class="form-control" name="q" placeholder="Search company, email..." value="<%= query %>">
+      </div>
+      <div class="col-md-3">
+        <select class="form-select" name="industry">
+          <option value="">All Industries</option>
+          <% industries.forEach(ind => { %>
+            <option value="<%= ind %>" <%= industry === ind ? 'selected' : '' %>><%= ind %></option>
+          <% }) %>
+        </select>
+      </div>
+      <div class="col-md-3">
+        <input type="text" class="form-control" name="location" placeholder="City, State..." value="<%= location %>">
+      </div>
+      <div class="col-md-2">
+        <button type="submit" class="btn btn-primary w-100"><i class="bi bi-search me-1"></i>Search</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>Company</th>
+            <th>Industry</th>
+            <th>Email</th>
+            <th>Phone</th>
+            <th>Location</th>
+            <th>Score</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (leads.length === 0) { %>
+            <tr><td colspan="6" class="text-center text-muted py-4">No leads yet. <a href="/scrape">Start scraping</a></td></tr>
+          <% } %>
+          <% leads.forEach(lead => { %>
+            <tr class="lead-row" onclick="showLeadDetail(<%= JSON.stringify(lead).replace(/"/g,'&quot;') %>)">
+              <td>
+                <strong><%= lead.company %></strong>
+                <% if (lead.website) { %>
+                  <br><small class="text-muted"><%= lead.website %></small>
+                <% } %>
+              </td>
+              <td><span class="badge-industry"><%= lead.industry || 'N/A' %></span></td>
+              <td>
+                <% if (lead.email) { %>
+                  <span onclick="event.stopPropagation()">
+                    <%= lead.email %>
+                    <button class="copy-btn" onclick="copyText('<%= lead.email %>')"><i class="bi bi-clipboard"></i></button>
+                  </span>
+                <% } else { %>
+                  <span class="text-muted">—</span>
+                <% } %>
+              </td>
+              <td><%= lead.phone || '—' %></td>
+              <td><%= [lead.city, lead.state].filter(Boolean).join(', ') || '—' %></td>
+              <td>
+                <% if (lead.score >= 60) { %>
+                  <span class="score-high"><%= lead.score %></span>
+                <% } else if (lead.score >= 30) { %>
+                  <span class="score-med"><%= lead.score %></span>
+                <% } else { %>
+                  <span class="score-low"><%= lead.score %></span>
+                <% } %>
+              </td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+  <div class="card-footer text-muted text-end">
+    <%= total %> total leads
+  </div>
+</div>
+
+<!-- Lead Detail Modal -->
+<div class="modal fade" id="leadModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content" style="background: var(--bg-card); border: 1px solid rgba(108,92,231,0.2);">
+      <div class="modal-header" style="border-color: rgba(108,92,231,0.1);">
+        <h5 class="modal-title" id="leadModalTitle"></h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body" id="leadModalBody"></div>
+      <div class="modal-footer" style="border-color: rgba(108,92,231,0.1);">
+        <button class="btn btn-success" id="copyEmailBtn" style="display:none;"><i class="bi bi-envelope me-1"></i>Copy Email</button>
+        <button class="btn btn-primary" id="copyAllBtn"><i class="bi bi-clipboard me-1"></i>Copy All</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+function showLeadDetail(lead) {
+  document.getElementById('leadModalTitle').textContent = lead.company;
+  const body = document.getElementById('leadModalBody');
+  let html = '<div class="mb-3">';
+  if (lead.email) html += `<p><strong>Email:</strong> ${lead.email} <button class="copy-btn" onclick="copyText('${lead.email}')"><i class="bi bi-clipboard"></i></button></p>`;
+  if (lead.phone) html += `<p><strong>Phone:</strong> ${lead.phone}</p>`;
+  if (lead.website) html += `<p><strong>Website:</strong> <a href="${lead.website}" target="_blank" style="color: var(--primary)">${lead.website}</a></p>`;
+  if (lead.address) html += `<p><strong>Address:</strong> ${lead.address}</p>`;
+  if (lead.city || lead.state) html += `<p><strong>Location:</strong> ${[lead.city, lead.state, lead.country].filter(Boolean).join(', ')}</p>`;
+  if (lead.industry) html += `<p><strong>Industry:</strong> ${lead.industry}</p>`;
+  if (lead.description) html += `<p><strong>Description:</strong> ${lead.description}</p>`;
+  if (lead.social_links) html += `<p><strong>Social:</strong> ${lead.social_links}</p>`;
+  html += `<p><strong>Source:</strong> ${lead.source || 'N/A'}</p>`;
+  html += '<p><strong>Score:</strong> ' + lead.score + '</p></div>';
+  body.innerHTML = html;
+
+  const copyEmailBtn = document.getElementById('copyEmailBtn');
+  if (lead.email) {
+    copyEmailBtn.style.display = 'inline-block';
+    copyEmailBtn.onclick = () => copyText(lead.email);
+  } else {
+    copyEmailBtn.style.display = 'none';
+  }
+
+  document.getElementById('copyAllBtn').onclick = () => {
+    const text = [
+      `Company: ${lead.company}`,
+      lead.email ? `Email: ${lead.email}` : '',
+      lead.phone ? `Phone: ${lead.phone}` : '',
+      lead.website ? `Website: ${lead.website}` : '',
+      lead.industry ? `Industry: ${lead.industry}` : '',
+      [lead.city, lead.state].filter(Boolean).join(', ') ? `Location: ${[lead.city, lead.state].filter(Boolean).join(', ')}` : '',
+    ].filter(Boolean).join('\n');
+    copyText(text);
+  };
+
+  new bootstrap.Modal(document.getElementById('leadModal')).show();
+}
+</script>

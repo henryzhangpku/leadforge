@@ -1,0 +1,50 @@
+<div class="mt-4 mb-4">
+  <h2><i class="bi bi-collection me-2"></i>Campaigns</h2>
+  <p class="text-muted">Track your lead generation campaigns</p>
+</div>
+
+<div class="card">
+  <div class="card-body p-0">
+    <div class="table-responsive">
+      <table class="table table-hover mb-0">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Industry</th>
+            <th>Location</th>
+            <th>Status</th>
+            <th>Leads Found</th>
+            <th>Created</th>
+          </tr>
+        </thead>
+        <tbody>
+          <% if (campaigns.length === 0) { %>
+            <tr><td colspan="7" class="text-center text-muted py-4">No campaigns yet. <a href="/scrape">Start scraping</a></td></tr>
+          <% } %>
+          <% campaigns.forEach(c => { %>
+            <tr>
+              <td><code>#<%= c.id %></code></td>
+              <td><strong><%= c.name %></strong></td>
+              <td><span class="badge-industry"><%= c.industry || '—' %></span></td>
+              <td><%= c.location || '—' %></td>
+              <td>
+                <% if (c.status === 'completed') { %>
+                  <span class="badge bg-success">Completed</span>
+                <% } else if (c.status === 'running') { %>
+                  <span class="badge bg-primary">Running</span>
+                <% } else if (c.status === 'failed') { %>
+                  <span class="badge bg-danger">Failed</span>
+                <% } else { %>
+                  <span class="badge bg-secondary">Draft</span>
+                <% } %>
+              </td>
+              <td><%= c.scraped_leads || 0 %></td>
+              <td class="text-muted"><%= new Date(c.created_at).toLocaleDateString() %></td>
+            </tr>
+          <% }) %>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

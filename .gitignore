@@ -1,0 +1,13 @@
+node_modules/
+.env
+data/exports/
+data/leadforge.db
+data/leadforge.db-shm
+data/leadforge.db-wal
+__pycache__/
+*.pyc
+*.tar.gz
+.DS_Store
+data/packages/BBB_Premium_Lead_Database.csv
+data/packages/BBB_Premium_Lead_Database.json
+README_SELL.md

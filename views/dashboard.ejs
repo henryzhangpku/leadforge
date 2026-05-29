@@ -1,0 +1,101 @@
+<div class="hero-section">
+  <h1 class="hero-title">AI-Powered Lead Generation</h1>
+  <p class="text-muted mt-3 mb-4" style="font-size: 1.15rem;">
+    Scrape, enrich, and export business leads from multiple directories at scale
+  </p>
+  <div class="d-flex justify-content-center gap-3">
+    <a href="/scrape" class="btn btn-primary btn-lg px-4">
+      <i class="bi bi-lightning-fill me-2"></i>Start Scraping
+    </a>
+    <a href="/leads" class="btn btn-outline-primary btn-lg px-4">
+      <i class="bi bi-people me-2"></i>Browse Leads
+    </a>
+  </div>
+</div>
+
+<div class="row g-4 mb-4">
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="text-muted small mb-1">Total Leads</div>
+          <div class="stat-value"><%= stats.total_leads %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-database"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="text-muted small mb-1">Emails Found</div>
+          <div class="stat-value"><%= stats.emails_found %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-envelope"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="text-muted small mb-1">Campaigns</div>
+          <div class="stat-value"><%= stats.total_campaigns %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-collection"></i></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-3">
+    <div class="stat-card">
+      <div class="d-flex justify-content-between align-items-start">
+        <div>
+          <div class="text-muted small mb-1">Credit Balance</div>
+          <div class="stat-value">$<%= (stats.balance || 0).toFixed(2) %></div>
+        </div>
+        <div class="stat-icon"><i class="bi bi-wallet2"></i></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card glow">
+      <div class="card-header">
+        <i class="bi bi-lightning me-2"></i>Quick Actions
+      </div>
+      <div class="card-body">
+        <div class="d-grid gap-3">
+          <a href="/scrape" class="btn btn-primary">
+            <i class="bi bi-search me-2"></i>Scrape New Leads
+          </a>
+          <a href="/leads?format=csv" class="btn btn-success">
+            <i class="bi bi-download me-2"></i>Export All Leads as CSV
+          </a>
+          <a href="/campaigns" class="btn btn-outline-primary">
+            <i class="bi bi-bar-chart me-2"></i>View Campaign History
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card glow">
+      <div class="card-header">
+        <i class="bi bi-info-circle me-2"></i>Monetization Ready
+      </div>
+      <div class="card-body">
+        <p>This platform is fully built and ready to monetize:</p>
+        <ul class="list-unstyled">
+          <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Stripe integration ready (add your keys)</li>
+          <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Export leads as CSV / JSON</li>
+          <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Credit system for paid access</li>
+          <li class="mb-2"><i class="bi bi-check-circle text-success me-2"></i>Campaign tracking & analytics</li>
+          <li><i class="bi bi-check-circle text-success me-2"></i>API endpoints for integrations</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>

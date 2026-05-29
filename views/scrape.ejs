@@ -1,0 +1,154 @@
+<div class="mt-4 mb-4">
+  <h2><i class="bi bi-search me-2"></i>Scrape New Leads</h2>
+  <p class="text-muted">Enter an industry and location, and LeadForge will automatically scrape business directories for leads.</p>
+</div>
+
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card glow">
+      <div class="card-header">
+        <i class="bi bi-sliders me-2"></i>Scrape Configuration
+      </div>
+      <div class="card-body">
+        <form id="scrapeForm">
+          <div class="mb-3">
+            <label class="form-label">Industry / Niche</label>
+            <input type="text" class="form-control" id="industry" placeholder="e.g. Real Estate, SaaS, Restaurants, Plumbing" required>
+            <div class="form-text text-muted">Be specific for better results</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Location</label>
+            <input type="text" class="form-control" id="location" placeholder="e.g. New York, San Francisco, Texas" required>
+            <div class="form-text text-muted">City, state, or region</div>
+          </div>
+          <div class="mb-3">
+            <label class="form-label">Campaign Name (optional)</label>
+            <input type="text" class="form-control" id="campaignName" placeholder="Leave blank for auto-name">
+          </div>
+          <button type="submit" class="btn btn-primary btn-lg w-100" id="scrapeBtn">
+            <i class="bi bi-lightning-fill me-2"></i>Start Scrape
+          </button>
+        </form>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card glow">
+      <div class="card-header">
+        <i class="bi bi-rocket-takeoff me-2"></i>Quick Scrape (One-Click)
+      </div>
+      <div class="card-body">
+        <p class="text-muted">Select from popular industries to start scraping instantly:</p>
+        <div class="d-grid gap-2">
+          <% [
+            ['Real Estate Agents', 'New York'],
+            ['Software Companies', 'San Francisco'],
+            ['Restaurants', 'Los Angeles'],
+            ['Law Firms', 'Chicago'],
+            ['Dental Clinics', 'Houston'],
+            ['Construction Companies', 'Miami'],
+            ['Marketing Agencies', 'New York'],
+            ['E-commerce Stores', 'Austin'],
+            ['Medical Practices', 'Boston'],
+            ['IT Services', 'Seattle'],
+          ].forEach(([ind, loc]) => { %>
+            <button class="btn btn-outline-primary text-start quick-scrape" data-industry="<%= ind %>" data-location="<%= loc %>">
+              <i class="bi bi-arrow-right-circle me-2"></i><strong><%= ind %></strong> <span class="text-muted">in <%= loc %></span>
+            </button>
+          <% }) %>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="card mt-4" id="resultCard" style="display:none;">
+  <div class="card-header">
+    <i class="bi bi-check-circle me-2"></i>Scrape Result
+  </div>
+  <div class="card-body" id="resultBody"></div>
+</div>
+
+<script>
+document.getElementById('scrapeForm').addEventListener('submit', async function(e) {
+  e.preventDefault();
+  const btn = document.getElementById('scrapeBtn');
+  btn.disabled = true;
+  btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Scraping...';
+
+  try {
+    const resp = await fetch('/api/scrape', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        industry: document.getElementById('industry').value,
+        location: document.getElementById('location').value,
+        campaign_name: document.getElementById('campaignName').value || undefined,
+      })
+    });
+    const data = await resp.json();
+    
+    const card = document.getElementById('resultCard');
+    card.style.display = 'block';
+    document.getElementById('resultBody').innerHTML = `
+      <div class="alert alert-success">
+        <i class="bi bi-check-circle-fill me-2"></i>${data.message}
+      </div>
+      <p>Campaign ID: <code>${data.campaign_id}</code></p>
+      <p>Leads will appear in the <a href="/leads">Leads Database</a> as they're scraped.</p>
+      <a href="/leads" class="btn btn-primary"><i class="bi bi-people me-1"></i>View Leads</a>
+    `;
+  } catch (err) {
+    document.getElementById('resultCard').style.display = 'block';
+    document.getElementById('resultBody').innerHTML = `
+      <div class="alert alert-danger">
+        <i class="bi bi-exclamation-triangle me-2"></i>Error: ${err.message}
+      </div>
+    `;
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = '<i class="bi bi-lightning-fill me-2"></i>Start Scrape';
+  }
+});
+
+document.querySelectorAll('.quick-scrape').forEach(btn => {
+  btn.addEventListener('click', async function() {
+    const industry = this.dataset.industry;
+    const location = this.dataset.location;
+    
+    document.getElementById('industry').value = industry;
+    document.getElementById('location').value = location;
+    
+    const submitBtn = document.getElementById('scrapeBtn');
+    submitBtn.disabled = true;
+    submitBtn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Scraping...';
+
+    try {
+      const resp = await fetch('/api/scrape', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ industry, location })
+      });
+      const data = await resp.json();
+      
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultBody').innerHTML = `
+        <div class="alert alert-success">
+          <i class="bi bi-check-circle-fill me-2"></i>Scraping ${industry} in ${location}...
+        </div>
+        <p>Campaign ID: <code>${data.campaign_id}</code></p>
+        <p>Check <a href="/leads">Leads Database</a> in a few minutes.</p>
+        <a href="/leads" class="btn btn-primary"><i class="bi bi-people me-1"></i>View Leads</a>
+      `;
+    } catch (err) {
+      document.getElementById('resultCard').style.display = 'block';
+      document.getElementById('resultBody').innerHTML = `
+        <div class="alert alert-danger"><i class="bi bi-exclamation-triangle me-2"></i>Error: ${err.message}</div>
+      `;
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.innerHTML = '<i class="bi bi-lightning-fill me-2"></i>Start Scrape';
+    }
+  });
+});
+</script>
